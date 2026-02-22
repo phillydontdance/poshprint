@@ -1,0 +1,126 @@
+{
+  "users": [
+    {
+      "firebaseUid": "ADMIN_FIREBASE_UID",
+      "email": "admin@poshprint.com",
+      "role": "admin",
+      "name": "Admin User"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Classic White Tee",
+      "description": "Premium cotton white t-shirt, perfect for custom prints",
+      "price": 24.99,
+      "quantity": 49,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "colors": [
+        "White"
+      ],
+      "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+      "category": "Basic"
+    },
+    {
+      "id": 2,
+      "name": "Black Graphic Tee",
+      "description": "Soft black t-shirt ideal for vibrant graphic prints",
+      "price": 29.99,
+      "quantity": 35,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black"
+      ],
+      "image": "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400",
+      "category": "Basic"
+    },
+    {
+      "id": 3,
+      "name": "Navy Blue V-Neck",
+      "description": "Stylish v-neck tee in navy blue with premium fabric",
+      "price": 27.99,
+      "quantity": 25,
+      "sizes": [
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Navy Blue"
+      ],
+      "image": "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400",
+      "category": "Premium"
+    },
+    {
+      "id": 4,
+      "name": "Oversized Streetwear Tee",
+      "description": "Trendy oversized fit for modern streetwear prints",
+      "price": 34.99,
+      "quantity": 20,
+      "sizes": [
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "colors": [
+        "Gray",
+        "Black",
+        "White"
+      ],
+      "image": "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400",
+      "category": "Streetwear"
+    },
+    {
+      "id": 5,
+      "name": "Polo Sport Tee",
+      "description": "Athletic polo shirt for professional and sport prints",
+      "price": 39.99,
+      "quantity": 15,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "White",
+        "Red",
+        "Blue"
+      ],
+      "image": "https://images.unsplash.com/photo-1625910513413-5fc42c2d43b3?w=400",
+      "category": "Sport"
+    }
+  ],
+  "orders": [
+    {
+      "id": 1771776700874,
+      "userId": 1771776685893,
+      "customerName": "IKW2.0",
+      "items": [
+        {
+          "productId": 1,
+          "name": "Classic White Tee",
+          "price": 24.99,
+          "quantity": 1,
+          "size": "S",
+          "color": "White"
+        }
+      ],
+      "total": 24.99,
+      "status": "pending",
+      "createdAt": "2026-02-22T16:11:40.875Z"
+    }
+  ]
+}
