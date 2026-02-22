@@ -898,31 +898,73 @@ a:hover { text-decoration: underline; }
   right: -8px;
 }
 
-/* ============ WHATSAPP BUTTON ============ */
-.whatsapp-float {
+/* ============ SOCIAL FLOAT ============ */
+.social-float {
   position: fixed;
   bottom: 24px;
   right: 24px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.social-toggle {
   width: 56px;
   height: 56px;
-  background: #25D366;
+  background: var(--primary);
   color: #fff;
+  border: none;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
-  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
-  z-index: 90;
-  text-decoration: none;
-  transition: transform 0.2s, box-shadow 0.2s;
+  font-size: 1.6rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(108, 60, 224, 0.4);
+  transition: transform 0.2s, background 0.2s;
 }
-.whatsapp-float:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+.social-toggle:hover { transform: scale(1.1); }
+.social-float.open .social-toggle {
+  background: var(--text-muted);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+}
+
+.social-links {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+  animation: socialPop 0.25s ease;
+}
+
+.social-link {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.35rem;
+  text-decoration: none;
+  transition: transform 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.social-link:hover {
+  transform: scale(1.15);
   text-decoration: none;
 }
-.whatsapp-float svg { font-size: 1.6rem; }
+
+.social-link.whatsapp { background: #25D366; }
+.social-link.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.social-link.tiktok { background: #010101; }
+.social-link.facebook { background: #1877F2; }
+
+@keyframes socialPop {
+  from { opacity: 0; transform: translateY(10px) scale(0.8); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 /* ============ MOBILE NAVIGATION ============ */
 .desktop-only { display: flex; }
@@ -1103,12 +1145,20 @@ a:hover { text-decoration: underline; }
     min-height: calc(100dvh - 56px);
   }
 
-  /* WhatsApp button above bottom tab bar */
-  .whatsapp-float {
+  /* Social FAB above bottom tab bar */
+  .social-float {
     bottom: 76px;
     right: 16px;
+  }
+  .social-toggle {
     width: 50px;
     height: 50px;
+    font-size: 1.4rem;
+  }
+  .social-link {
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
   }
 
   /* Auth */
