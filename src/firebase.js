@@ -1,16 +1,15 @@
 // Firebase configuration
-// ⚠️ REPLACE these values with your actual Firebase project config
-// Go to: Firebase Console → Project Settings → General → Your apps → Web app
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyDHKIB41S1B5elpqKw5fh_BnO1zpFt0Q_E",
+  authDomain: "posh-print.firebaseapp.com",
+  projectId: "posh-print",
+  storageBucket: "posh-print.firebasestorage.app",
+  messagingSenderId: "534213473406",
+  appId: "1:534213473406:web:2e1c4b9c95d1da5b7a942f",
+  measurementId: "G-RHPHGDLMFS",
 };
 
 const app = initializeApp(firebaseConfig);

@@ -11,7 +11,7 @@ admin.initializeApp({
   // If you have a service account key file, use:
   // credential: admin.credential.cert('./serviceAccountKey.json'),
   // Otherwise for emulator/dev, just set the project ID:
-  projectId: process.env.FIREBASE_PROJECT_ID || 'your-firebase-project-id',
+  projectId: process.env.FIREBASE_PROJECT_ID || 'posh-print',
 });
 
 const __filename = fileURLToPath(import.meta.url);
