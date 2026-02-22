@@ -20,7 +20,7 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // --- Helpers ---
 function readData() {

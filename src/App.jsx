@@ -12,6 +12,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminSettings from './pages/admin/AdminSettings';
+import { IoLogoWhatsapp } from 'react-icons/io5';
 import './App.css';
 
 function AppRoutes() {
@@ -20,6 +21,15 @@ function AppRoutes() {
   return (
     <>
       <Navbar />
+      <a
+        href="https://wa.me/254706276584?text=Hi%20Posh%20Print!%20I'm%20interested%20in%20your%20services."
+        target="_blank"
+        rel="noopener noreferrer"
+        className="whatsapp-float"
+        title="Chat on WhatsApp"
+      >
+        <IoLogoWhatsapp />
+      </a>
       <main className="main-content">
         <Routes>
           {/* Public */}

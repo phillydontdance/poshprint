@@ -2,7 +2,29 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from '../../services/api';
-import { FiPlus, FiEdit2, FiTrash2, FiPackage, FiX, FiSave } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiPackage, FiX, FiSave, FiCamera, FiImage } from 'react-icons/fi';
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
+function compressImage(file, maxWidth = 800) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ratio = Math.min(maxWidth / img.width, 1);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function AdminProducts() {
   const { token } = useAuth();
@@ -174,8 +196,36 @@ export default function AdminProducts() {
               </div>
 
               <div className="form-group">
-                <label>Image URL</label>
-                <input name="image" value={form.image} onChange={handleChange} placeholder="https://..." />
+                <label><FiImage /> Product Image</label>
+                <div className="image-upload-group">
+                  <label className="btn btn-secondary image-upload-btn">
+                    <FiCamera /> Take / Choose Photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      style={{ display: 'none' }}
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        if (file.size > MAX_IMAGE_SIZE) {
+                          setError('Image must be under 5MB');
+                          return;
+                        }
+                        const base64 = await compressImage(file);
+                        setForm({ ...form, image: base64 });
+                      }}
+                    />
+                  </label>
+                  <span className="image-or">or</span>
+                  <input name="image" value={form.image.startsWith('data:') ? '' : form.image} onChange={handleChange} placeholder="Paste image URL..." />
+                </div>
+                {form.image && (
+                  <div className="image-preview">
+                    <img src={form.image} alt="Preview" />
+                    <button type="button" className="btn-remove" onClick={() => setForm({ ...form, image: '' })}>×</button>
+                  </div>
+                )}
               </div>
 
               <div className="form-actions">
