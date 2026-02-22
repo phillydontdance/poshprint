@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { fetchProducts } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import { placeOrder } from '../services/api';
 import { FiShoppingCart, FiPackage, FiSearch, FiCheck } from 'react-icons/fi';
 
 export default function ShopPage() {
   const { user, token } = useAuth();
+  const { formatPrice } = useSettings();
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -147,6 +149,7 @@ export default function ShopPage() {
                 product={product}
                 onAddToCart={addToCart}
                 isLoggedIn={!!user}
+                formatPrice={formatPrice}
               />
             ))
           )}
@@ -166,14 +169,14 @@ export default function ShopPage() {
                       <h4>{item.name}</h4>
                       <p>{item.size} • {item.color}</p>
                       <p className="cart-item-price">
-                        ${item.price.toFixed(2)} × {item.quantity}
+                        {formatPrice(item.price)} × {item.quantity}
                       </p>
                     </div>
                     <button onClick={() => removeFromCart(i)} className="btn-remove">×</button>
                   </div>
                 ))}
                 <div className="cart-total">
-                  <strong>Total: ${cartTotal.toFixed(2)}</strong>
+                  <strong>Total: {formatPrice(cartTotal)}</strong>
                 </div>
                 <button onClick={handleCheckout} className="btn btn-primary btn-full">
                   Place Order
@@ -187,7 +190,7 @@ export default function ShopPage() {
   );
 }
 
-function ProductCard({ product, onAddToCart, isLoggedIn }) {
+function ProductCard({ product, onAddToCart, isLoggedIn, formatPrice }) {
   const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
 
@@ -200,7 +203,7 @@ function ProductCard({ product, onAddToCart, isLoggedIn }) {
       <div className="product-info">
         <h3>{product.name}</h3>
         <p className="product-desc">{product.description}</p>
-        <div className="product-price">${product.price.toFixed(2)}</div>
+        <div className="product-price">{formatPrice(product.price)}</div>
         <div className="product-stock">
           {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of stock'}
         </div>

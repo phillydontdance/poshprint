@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import { fetchProducts, fetchOrders } from '../../services/api';
 import { FiPackage, FiShoppingBag, FiUsers, FiDollarSign, FiTrendingUp } from 'react-icons/fi';
 
 export default function AdminDashboard() {
   const { token } = useAuth();
+  const { formatPrice } = useSettings();
   const [stats, setStats] = useState({ products: 0, orders: 0, revenue: 0, stock: 0 });
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +60,7 @@ export default function AdminDashboard() {
         <div className="stat-card">
           <FiDollarSign className="stat-icon" />
           <div>
-            <h3>${stats.revenue.toFixed(2)}</h3>
+            <h3>{formatPrice(stats.revenue)}</h3>
             <p>Revenue</p>
           </div>
         </div>
@@ -93,7 +95,7 @@ export default function AdminDashboard() {
                   <td>#{order.id}</td>
                   <td>{order.customerName}</td>
                   <td>{order.items.length} items</td>
-                  <td>${order.total.toFixed(2)}</td>
+                  <td>{formatPrice(order.total)}</td>
                   <td><span className={`status-badge ${order.status}`}>{order.status}</span></td>
                   <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                 </tr>

@@ -122,5 +122,9 @@
       "status": "pending",
       "createdAt": "2026-02-22T16:11:40.875Z"
     }
-  ]
+  ],
+  "settings": {
+    "currency": "USD",
+    "currencySymbol": "$"
+  }
 }

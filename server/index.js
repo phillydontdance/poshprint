@@ -65,6 +65,25 @@ function adminOnly(req, res, next) {
 
 // ============ AUTH ROUTES ============
 
+// Make a user admin (secured by ADMIN_SECRET env variable)
+// Usage: POST /api/admin/setup with { firebaseUid, secret }
+app.post('/api/admin/setup', (req, res) => {
+  const { firebaseUid, secret } = req.body;
+  const adminSecret = process.env.ADMIN_SECRET || 'poshprint-admin-2026';
+
+  if (secret !== adminSecret) {
+    return res.status(403).json({ error: 'Invalid secret' });
+  }
+
+  const data = readData();
+  const user = data.users.find(u => u.firebaseUid === firebaseUid);
+  if (!user) return res.status(404).json({ error: 'User not found. Login first to create your account.' });
+
+  user.role = 'admin';
+  writeData(data);
+  res.json({ message: `User ${user.email} is now admin!`, user });
+});
+
 // Sync Firebase user with our database (called after login/register)
 app.post('/api/auth/sync', authenticate, (req, res) => {
   const { name } = req.body;
@@ -239,6 +258,22 @@ app.put('/api/orders/:id', authenticate, adminOnly, (req, res) => {
   order.status = req.body.status || order.status;
   writeData(data);
   res.json(order);
+});
+
+// ============ SETTINGS ROUTES ============
+
+// Get app settings (public)
+app.get('/api/settings', (req, res) => {
+  const data = readData();
+  res.json(data.settings || { currency: 'USD', currencySymbol: '$' });
+});
+
+// Update settings (admin only)
+app.put('/api/settings', authenticate, adminOnly, (req, res) => {
+  const data = readData();
+  data.settings = { ...data.settings, ...req.body };
+  writeData(data);
+  res.json(data.settings);
 });
 
 // ============ SERVE FRONTEND ============

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from '../../services/api';
 import { FiPlus, FiEdit2, FiTrash2, FiPackage, FiX, FiSave } from 'react-icons/fi';
 
 export default function AdminProducts() {
   const { token } = useAuth();
+  const { formatPrice, settings } = useSettings();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -151,7 +153,7 @@ export default function AdminProducts() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Price ($) *</label>
+                  <label>Price ({settings.currencySymbol}) *</label>
                   <input name="price" type="number" step="0.01" min="0" value={form.price} onChange={handleChange} required placeholder="29.99" />
                 </div>
                 <div className="form-group">
@@ -212,7 +214,7 @@ export default function AdminProducts() {
                     <br /><small className="muted">{product.description?.substring(0, 50)}...</small>
                   </td>
                   <td><span className="category-tag">{product.category}</span></td>
-                  <td className="price">${product.price.toFixed(2)}</td>
+                  <td className="price">{formatPrice(product.price)}</td>
                   <td>
                     <span className={`stock-badge ${product.quantity < 10 ? 'low' : 'ok'}`}>
                       {product.quantity}

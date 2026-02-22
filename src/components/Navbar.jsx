@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { FiShoppingBag, FiLogOut, FiUser, FiGrid, FiShoppingCart, FiSun, FiMoon, FiMenu, FiX, FiPackage, FiHome } from 'react-icons/fi';
+import { FiShoppingBag, FiLogOut, FiUser, FiGrid, FiShoppingCart, FiSun, FiMoon, FiMenu, FiX, FiPackage, FiHome, FiSettings } from 'react-icons/fi';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -52,6 +52,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/admin/orders" className={`nav-link ${isActive('/admin/orders')}`}>
                     Orders
+                  </Link>
+                  <Link to="/admin/settings" className={`nav-link ${isActive('/admin/settings')}`}>
+                    Settings
                   </Link>
                 </>
               ) : (
@@ -129,6 +132,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/admin/orders" className={`mobile-link ${isActive('/admin/orders')}`} onClick={closeMenu}>
                     <FiShoppingBag /> Orders
+                  </Link>
+                  <Link to="/admin/settings" className={`mobile-link ${isActive('/admin/settings')}`} onClick={closeMenu}>
+                    <FiSettings /> Settings
                   </Link>
                 </>
               ) : (

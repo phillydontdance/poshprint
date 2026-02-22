@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import { fetchOrders, updateOrderStatus } from '../../services/api';
 import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiRefreshCw } from 'react-icons/fi';
 
 export default function AdminOrders() {
   const { token } = useAuth();
+  const { formatPrice } = useSettings();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -107,13 +109,13 @@ export default function AdminOrders() {
                     <span className="item-name">{item.name}</span>
                     <span className="item-details">{item.size} • {item.color}</span>
                     <span className="item-qty">×{item.quantity}</span>
-                    <span className="item-price">${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="item-price">{formatPrice(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
 
               <div className="order-total">
-                <strong>Total: ${order.total.toFixed(2)}</strong>
+                <strong>Total: {formatPrice(order.total)}</strong>
               </div>
             </div>
           ))}
