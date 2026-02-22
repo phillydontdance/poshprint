@@ -241,9 +241,9 @@ app.put('/api/orders/:id', authenticate, adminOnly, (req, res) => {
   res.json(order);
 });
 
-// ============ SERVE FRONTEND IN PRODUCTION ============
-if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '..', 'dist');
+// ============ SERVE FRONTEND ============
+const distPath = path.join(__dirname, '..', 'dist');
+if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
   // All non-API routes serve the React app
   app.get('*', (req, res) => {
