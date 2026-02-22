@@ -79,7 +79,14 @@ export default function RegisterPage() {
       navigate('/shop');
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {
-        setError('Google sign-up failed. Please try again.');
+        console.error('Google sign-up error:', err);
+        if (err.code === 'auth/unauthorized-domain') {
+          setError('This domain is not authorized in Firebase. Add it in Firebase Console → Authentication → Settings → Authorized domains.');
+        } else if (err.code === 'auth/operation-not-allowed') {
+          setError('Google sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.');
+        } else {
+          setError(err.message || 'Google sign-up failed. Please try again.');
+        }
       }
     } finally {
       setIsLoading(false);
