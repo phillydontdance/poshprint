@@ -17,7 +17,7 @@ const CURRENCIES = [
 ];
 
 export function SettingsProvider({ children }) {
-  const [settings, setSettings] = useState({ currency: 'USD', currencySymbol: '$' });
+  const [settings, setSettings] = useState({ currency: 'KES', currencySymbol: 'KSh' });
 
   useEffect(() => {
     fetch('/api/settings')

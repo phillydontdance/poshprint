@@ -265,7 +265,7 @@ app.put('/api/orders/:id', authenticate, adminOnly, (req, res) => {
 // Get app settings (public)
 app.get('/api/settings', (req, res) => {
   const data = readData();
-  res.json(data.settings || { currency: 'USD', currencySymbol: '$' });
+  res.json(data.settings || { currency: 'KES', currencySymbol: 'KSh' });
 });
 
 // Update settings (admin only)

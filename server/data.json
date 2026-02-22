@@ -124,7 +124,7 @@
     }
   ],
   "settings": {
-    "currency": "USD",
-    "currencySymbol": "$"
+    "currency": "KES",
+    "currencySymbol": "KSh"
   }
 }
