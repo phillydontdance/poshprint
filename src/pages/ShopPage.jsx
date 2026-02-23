@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import { fetchProducts } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
-import { placeOrder } from '../services/api';
-import { FiShoppingCart, FiPackage, FiSearch, FiCheck, FiSmartphone } from 'react-icons/fi';
-import MpesaPaymentModal from '../components/MpesaPaymentModal';
+import { FiShoppingCart, FiPackage, FiSearch, FiCheck } from 'react-icons/fi';
+import CheckoutModal from '../components/CheckoutModal';
 
 export default function ShopPage() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const { formatPrice } = useSettings();
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
@@ -17,8 +16,7 @@ export default function ShopPage() {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [pendingOrder, setPendingOrder] = useState(null);
-  const [showPayment, setShowPayment] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -72,38 +70,20 @@ export default function ShopPage() {
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!user) {
       setError('Please login to place an order');
       return;
     }
-    try {
-      const order = await placeOrder(token, cart.map(i => ({
-        productId: i.productId,
-        quantity: i.quantity,
-        size: i.size,
-        color: i.color,
-      })));
-      setCart([]);
-      setPendingOrder(order);
-      setShowPayment(true);
-      loadProducts();
-    } catch (err) {
-      setError(err.message);
-    }
+    setShowCheckout(true);
   };
 
-  const handlePaymentComplete = () => {
-    setShowPayment(false);
-    setPendingOrder(null);
+  const handleCheckoutComplete = () => {
+    setShowCheckout(false);
+    setCart([]);
+    setShowCart(false);
     setOrderSuccess(true);
-    setTimeout(() => setOrderSuccess(false), 4000);
-  };
-
-  const handleSkipPayment = () => {
-    setShowPayment(false);
-    setPendingOrder(null);
-    setOrderSuccess(true);
+    loadProducts();
     setTimeout(() => setOrderSuccess(false), 4000);
   };
 
@@ -152,35 +132,12 @@ export default function ShopPage() {
         </div>
       )}
 
-      {showPayment && pendingOrder && (
-        <div className="payment-choice-overlay" onClick={handleSkipPayment}>
-          <div className="payment-choice-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Order Placed! 🎉</h2>
-            <p>Order #{pendingOrder.id} has been created.</p>
-            <p className="payment-prompt">Would you like to pay now via M-Pesa?</p>
-            <div className="payment-choice-buttons">
-              <button
-                className="btn btn-mpesa"
-                onClick={() => {
-                  setShowPayment(false);
-                  setPendingOrder({ ...pendingOrder, _showMpesa: true });
-                }}
-              >
-                <FiSmartphone /> Pay with M-Pesa
-              </button>
-              <button className="btn btn-secondary" onClick={handleSkipPayment}>
-                Pay Later
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {pendingOrder?._showMpesa && (
-        <MpesaPaymentModal
-          order={pendingOrder}
-          onClose={() => { setPendingOrder(null); handlePaymentComplete(); }}
-          onPaymentComplete={handlePaymentComplete}
+      {showCheckout && (
+        <CheckoutModal
+          cartItems={cart}
+          cartTotal={cartTotal}
+          onClose={() => setShowCheckout(false)}
+          onComplete={handleCheckoutComplete}
         />
       )}
 

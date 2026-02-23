@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { fetchOrders } from '../services/api';
-import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiSmartphone, FiDollarSign } from 'react-icons/fi';
+import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiSmartphone, FiDollarSign, FiMapPin, FiShoppingBag } from 'react-icons/fi';
 import MpesaPaymentModal from '../components/MpesaPaymentModal';
 
 export default function CustomerOrdersPage() {
@@ -93,6 +93,16 @@ export default function CustomerOrdersPage() {
                   </div>
                 ))}
               </div>
+
+              {order.deliveryMethod && (
+                <div className="order-delivery-info">
+                  {order.deliveryMethod === 'delivery' ? (
+                    <><FiTruck /> <span>Delivery to: <strong>{order.deliveryLocation}</strong></span></>
+                  ) : (
+                    <><FiShoppingBag /> <span>Shop Pickup</span></>
+                  )}
+                </div>
+              )}
 
               <div className="order-total">
                 <strong>Total: {formatPrice(order.total)}</strong>

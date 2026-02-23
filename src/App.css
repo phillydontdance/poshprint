@@ -1328,7 +1328,231 @@ a:hover { text-decoration: underline; }
   }
 }
 
-/* ============ M-PESA PAYMENT ============ */
+/* ============ CHECKOUT & M-PESA PAYMENT ============ */
+
+/* Checkout overlay & modal */
+.checkout-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.checkout-modal {
+  background: var(--card);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 2rem;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+
+/* Progress bar */
+.checkout-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.progress-step.active { color: var(--primary); font-weight: 600; }
+
+.progress-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--border);
+  color: var(--text-muted);
+}
+.progress-step.active .progress-dot {
+  background: var(--primary);
+  color: white;
+}
+
+.progress-line {
+  width: 30px;
+  height: 2px;
+  background: var(--border);
+}
+
+/* Checkout summary strip */
+.checkout-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg);
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+.checkout-summary span { color: var(--text-muted); font-size: 0.85rem; }
+
+.checkout-step h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.15rem;
+  margin-bottom: 0.75rem;
+}
+
+.checkout-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.checkout-delivery-confirm {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+/* Delivery options */
+.delivery-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.delivery-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.delivery-option:hover { border-color: var(--primary-dark); }
+.delivery-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+.delivery-option input[type="radio"] { display: none; }
+
+.delivery-option-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.delivery-option-content strong {
+  display: block;
+  font-size: 0.95rem;
+}
+.delivery-option-content p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.delivery-icon {
+  font-size: 1.5rem;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.checkout-step textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  resize: vertical;
+  font-family: inherit;
+  background: var(--input-bg);
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+.checkout-step textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.checkout-step .form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+/* Payment options in checkout */
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0;
+}
+.btn-text:hover { color: var(--primary); }
+
+/* Delivery info on order cards */
+.order-delivery-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--bg);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+.order-delivery-info svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.order-delivery-info strong {
+  color: var(--text);
+}
+.customer-phone {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ============ M-PESA STYLES ============ */
 .mpesa-modal-overlay {
   position: fixed;
   inset: 0;

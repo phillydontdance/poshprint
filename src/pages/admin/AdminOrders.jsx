@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { fetchOrders, updateOrderStatus, updateOrderPayment } from '../../services/api';
-import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiRefreshCw, FiDollarSign, FiSmartphone } from 'react-icons/fi';
+import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiRefreshCw, FiDollarSign, FiSmartphone, FiMapPin, FiShoppingBag } from 'react-icons/fi';
 
 export default function AdminOrders() {
   const { token } = useAuth();
@@ -125,6 +125,17 @@ export default function AdminOrders() {
                   </div>
                 ))}
               </div>
+
+              {order.deliveryMethod && (
+                <div className="order-delivery-info">
+                  {order.deliveryMethod === 'delivery' ? (
+                    <><FiMapPin className="delivery-badge-icon" /> <span>Delivery to: <strong>{order.deliveryLocation}</strong></span></>
+                  ) : (
+                    <><FiShoppingBag className="delivery-badge-icon" /> <span>Shop Pickup</span></>
+                  )}
+                  {order.customerPhone && <span className="customer-phone"> • Phone: {order.customerPhone}</span>}
+                </div>
+              )}
 
               <div className="order-total">
                 <strong>Total: {formatPrice(order.total)}</strong>

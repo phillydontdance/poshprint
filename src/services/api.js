@@ -52,11 +52,16 @@ export async function deleteProduct(token, id) {
 }
 
 // Orders
-export async function placeOrder(token, items) {
+export async function placeOrder(token, items, delivery = {}) {
   const res = await fetch(`${API_URL}/orders`, {
     method: 'POST',
     headers: getHeaders(token),
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({
+      items,
+      deliveryMethod: delivery.method || 'pickup',
+      deliveryLocation: delivery.location || null,
+      customerPhone: delivery.phone || null,
+    }),
   });
   if (!res.ok) {
     const err = await res.json();

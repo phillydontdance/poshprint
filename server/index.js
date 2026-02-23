@@ -197,9 +197,15 @@ app.delete('/api/products/:id', authenticate, adminOnly, (req, res) => {
 
 // Place order (customer)
 app.post('/api/orders', authenticate, (req, res) => {
-  const { items } = req.body; // [{ productId, quantity, size, color }]
+  const { items, deliveryMethod, deliveryLocation, customerPhone } = req.body;
   if (!items || items.length === 0) {
     return res.status(400).json({ error: 'Order must have items' });
+  }
+  if (!deliveryMethod || !['pickup', 'delivery'].includes(deliveryMethod)) {
+    return res.status(400).json({ error: 'Please select pickup or delivery' });
+  }
+  if (deliveryMethod === 'delivery' && !deliveryLocation) {
+    return res.status(400).json({ error: 'Delivery location is required' });
   }
 
   const data = readData();
@@ -227,8 +233,11 @@ app.post('/api/orders', authenticate, (req, res) => {
     id: Date.now(),
     userId: req.user.id,
     customerName: req.user.name,
+    customerPhone: customerPhone || null,
     items: orderItems,
     total: orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
+    deliveryMethod,
+    deliveryLocation: deliveryMethod === 'delivery' ? deliveryLocation : null,
     status: 'pending',
     paymentStatus: 'unpaid',
     paymentMethod: null,
