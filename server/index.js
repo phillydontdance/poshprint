@@ -33,7 +33,7 @@ function writeData(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-// Auth middleware — verifies Firebase ID tokens
+// Auth middleware — verifies Firebase ID tokens (+ dev bypass)
 async function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -41,6 +41,21 @@ async function authenticate(req, res, next) {
   }
 
   const idToken = authHeader.split(' ')[1];
+
+  // Dev mode: accept "dev:<uid>" tokens for local development
+  if (idToken.startsWith('dev:') && process.env.NODE_ENV !== 'production') {
+    const uid = idToken.slice(4);
+    const data = readData();
+    const dbUser = data.users.find(u => u.firebaseUid === uid);
+    req.user = {
+      id: uid,
+      email: dbUser?.email || 'dev@localhost',
+      name: dbUser?.name || 'Dev User',
+      role: dbUser?.role || 'customer',
+    };
+    return next();
+  }
+
   try {
     const decoded = await admin.auth().verifyIdToken(idToken);
     const data = readData();
@@ -66,6 +81,27 @@ function adminOnly(req, res, next) {
 }
 
 // ============ AUTH ROUTES ============
+
+// Dev login — look up user by UID (dev only, not for production)
+if (process.env.NODE_ENV !== 'production') {
+  app.post('/api/dev/login', (req, res) => {
+    const { uid } = req.body;
+    if (!uid) return res.status(400).json({ error: 'UID is required' });
+
+    const data = readData();
+    const dbUser = data.users.find(u => u.firebaseUid === uid);
+    if (!dbUser) return res.status(404).json({ error: `No user found with UID: ${uid}` });
+
+    console.log(`🔧 Dev login: ${dbUser.name} (${dbUser.email}) — role: ${dbUser.role}`);
+    res.json({
+      id: dbUser.firebaseUid,
+      email: dbUser.email,
+      name: dbUser.name,
+      role: dbUser.role,
+      token: `dev:${dbUser.firebaseUid}`,
+    });
+  });
+}
 
 // Make a user admin (secured by ADMIN_SECRET env variable)
 // Usage: POST /api/admin/setup with { firebaseUid, secret }
