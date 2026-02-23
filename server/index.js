@@ -238,6 +238,7 @@ app.post('/api/orders', authenticate, (req, res) => {
     total: orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
     deliveryMethod,
     deliveryLocation: deliveryMethod === 'delivery' ? deliveryLocation : null,
+    deliveryCoords: deliveryMethod === 'delivery' ? (req.body.deliveryCoords || null) : null,
     status: 'pending',
     paymentStatus: 'unpaid',
     paymentMethod: null,
@@ -347,6 +348,48 @@ app.post('/api/mpesa/callback', (req, res) => {
 
   // Always respond with success to M-Pesa
   res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+});
+
+// Manual M-Pesa payment confirmation (customer sends money & enters receipt code)
+app.post('/api/mpesa/confirm', authenticate, (req, res) => {
+  const { orderId, confirmationCode } = req.body;
+
+  if (!orderId || !confirmationCode) {
+    return res.status(400).json({ error: 'Order ID and confirmation code are required' });
+  }
+
+  const code = confirmationCode.trim().toUpperCase();
+  if (code.length < 8) {
+    return res.status(400).json({ error: 'Invalid confirmation code' });
+  }
+
+  const data = readData();
+  if (!data.orders) data.orders = [];
+  const order = data.orders.find(o => String(o.id) === String(orderId));
+
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  if (order.userId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Not authorized' });
+  }
+  if (order.paymentStatus === 'paid') {
+    return res.status(400).json({ error: 'Order is already paid' });
+  }
+
+  // Record the manual payment — admin can verify the code later
+  order.paymentMethod = 'mpesa-manual';
+  order.paymentStatus = 'pending';
+  order.mpesaReceiptNumber = code;
+  order.confirmedAt = new Date().toISOString();
+  writeData(data);
+
+  console.log(`📱 Manual M-Pesa payment for Order #${order.id}: ${code}`);
+
+  res.json({
+    message: 'Payment recorded. It will be verified shortly.',
+    orderId: order.id,
+    paymentStatus: order.paymentStatus,
+    mpesaReceiptNumber: code,
+  });
 });
 
 // Check payment status for an order

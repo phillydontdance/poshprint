@@ -1,76 +1,53 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
-import { initiateMpesaPayment, checkPaymentStatus } from '../services/api';
-import { FiSmartphone, FiCheckCircle, FiXCircle, FiLoader, FiX } from 'react-icons/fi';
+import { confirmManualPayment } from '../services/api';
+import { FiSmartphone, FiCheckCircle, FiXCircle, FiLoader, FiX, FiCopy, FiArrowRight, FiArrowLeft } from 'react-icons/fi';
+
+const MPESA_PHONE = '0706276584';
+const MPESA_NAME = 'Posh Print';
 
 export default function MpesaPaymentModal({ order, onClose, onPaymentComplete }) {
   const { token } = useAuth();
   const { formatPrice } = useSettings();
-  const [phone, setPhone] = useState('');
-  const [step, setStep] = useState('input'); // input | sending | waiting | success | failed
+  const [step, setStep] = useState('instructions'); // instructions | confirm | verifying | success | failed
+  const [confirmationCode, setConfirmationCode] = useState('');
   const [error, setError] = useState('');
-  const [receiptNumber, setReceiptNumber] = useState('');
-  const pollRef = useRef(null);
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleCopyNumber = () => {
+    navigator.clipboard.writeText(MPESA_PHONE).catch(() => {});
+    setCopied(true);
+    timerRef.current = setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleConfirmPayment = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Basic phone validation
-    const cleaned = phone.replace(/\s+/g, '').replace(/[^0-9+]/g, '');
-    if (cleaned.length < 9) {
-      setError('Please enter a valid phone number');
+    const code = confirmationCode.trim().toUpperCase();
+    if (!code || code.length < 8) {
+      setError('Please enter a valid M-Pesa confirmation code (e.g. SLK4H7TXY2)');
       return;
     }
 
-    setStep('sending');
+    setStep('verifying');
 
     try {
-      await initiateMpesaPayment(token, order.id, phone);
-      setStep('waiting');
-      startPolling();
+      await confirmManualPayment(token, order.id, code);
+      setStep('success');
+      if (onPaymentComplete) onPaymentComplete();
     } catch (err) {
       setError(err.message);
-      setStep('input');
+      setStep('confirm');
     }
-  };
-
-  const startPolling = () => {
-    let attempts = 0;
-    const maxAttempts = 40; // Poll for ~2 minutes
-
-    pollRef.current = setInterval(async () => {
-      attempts++;
-      try {
-        const status = await checkPaymentStatus(token, order.id);
-
-        if (status.paymentStatus === 'paid') {
-          clearInterval(pollRef.current);
-          setReceiptNumber(status.mpesaReceiptNumber || '');
-          setStep('success');
-          if (onPaymentComplete) onPaymentComplete(status);
-        } else if (status.paymentStatus === 'failed') {
-          clearInterval(pollRef.current);
-          setError('Payment was not completed. Please try again.');
-          setStep('failed');
-        }
-      } catch {
-        // Keep polling on network errors
-      }
-
-      if (attempts >= maxAttempts) {
-        clearInterval(pollRef.current);
-        setError('Payment verification timed out. If you paid, the status will update shortly.');
-        setStep('failed');
-      }
-    }, 3000);
   };
 
   return (
@@ -90,68 +67,90 @@ export default function MpesaPaymentModal({ order, onClose, onPaymentComplete })
           <p className="mpesa-order-ref">Order #{order.id}</p>
         </div>
 
-        {step === 'input' && (
-          <form onSubmit={handleSubmit} className="mpesa-form">
-            <div className="mpesa-info">
-              <p>Enter your M-Pesa registered phone number. You will receive a prompt on your phone to complete the payment.</p>
-            </div>
+        {step === 'instructions' && (
+          <div>
+            <div className="mpesa-instructions">
+              <h3>Send money to:</h3>
+              <div className="mpesa-pay-details">
+                <div className="pay-detail-row">
+                  <span className="pay-label">Phone Number</span>
+                  <div className="pay-value-row">
+                    <strong className="pay-number">{MPESA_PHONE}</strong>
+                    <button type="button" className="btn-copy" onClick={handleCopyNumber}>
+                      <FiCopy /> {copied ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+                <div className="pay-detail-row">
+                  <span className="pay-label">Name</span>
+                  <strong>{MPESA_NAME}</strong>
+                </div>
+                <div className="pay-detail-row">
+                  <span className="pay-label">Amount</span>
+                  <strong className="pay-amount">{formatPrice(order.total)}</strong>
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="mpesa-phone">Phone Number</label>
-              <div className="phone-input-wrapper">
-                <span className="phone-prefix">+254</span>
-                <input
-                  id="mpesa-phone"
-                  type="tel"
-                  placeholder="7XX XXX XXX"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  autoFocus
-                  required
-                />
+              <div className="mpesa-steps-guide">
+                <h4>How to pay:</h4>
+                <ol>
+                  <li>Open M-Pesa on your phone</li>
+                  <li>Select <strong>Send Money</strong></li>
+                  <li>Enter number: <strong>{MPESA_PHONE}</strong></li>
+                  <li>Enter amount: <strong>{formatPrice(order.total)}</strong></li>
+                  <li>Enter your M-Pesa PIN &amp; confirm</li>
+                  <li>Enter the confirmation code below</li>
+                </ol>
               </div>
             </div>
 
-            {error && <div className="mpesa-error">{error}</div>}
-
-            <button type="submit" className="btn btn-mpesa">
-              <FiSmartphone /> Send Payment Request
+            <button className="btn btn-mpesa btn-full" onClick={() => setStep('confirm')} style={{ marginTop: '1rem' }}>
+              I&apos;ve Sent the Money <FiArrowRight />
             </button>
-          </form>
+          </div>
         )}
 
-        {step === 'sending' && (
+        {step === 'confirm' && (
+          <div>
+            <p className="checkout-subtitle" style={{ textAlign: 'center' }}>
+              Enter the M-Pesa confirmation code from the SMS you received.
+            </p>
+
+            <form onSubmit={handleConfirmPayment}>
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label htmlFor="mpesa-code-modal">M-Pesa Confirmation Code</label>
+                <input
+                  id="mpesa-code-modal"
+                  type="text"
+                  className="confirmation-code-input"
+                  placeholder="e.g. SLK4H7TXY2"
+                  value={confirmationCode}
+                  onChange={(e) => setConfirmationCode(e.target.value.toUpperCase())}
+                  autoFocus
+                  maxLength={12}
+                  required
+                />
+              </div>
+
+              {error && <div className="mpesa-error">{error}</div>}
+
+              <button type="submit" className="btn btn-mpesa btn-full">
+                <FiCheckCircle /> Confirm Payment
+              </button>
+            </form>
+
+            <button className="btn-text" onClick={() => setStep('instructions')} style={{ display: 'block', margin: '0.75rem auto 0' }}>
+              <FiArrowLeft /> Back to instructions
+            </button>
+          </div>
+        )}
+
+        {step === 'verifying' && (
           <div className="mpesa-status">
             <div className="mpesa-spinner">
               <FiLoader className="spin" />
             </div>
-            <h3>Sending payment request...</h3>
-            <p>Please wait while we connect to M-Pesa</p>
-          </div>
-        )}
-
-        {step === 'waiting' && (
-          <div className="mpesa-status">
-            <div className="mpesa-spinner pulse">
-              <FiSmartphone />
-            </div>
-            <h3>Check your phone</h3>
-            <p>An M-Pesa payment prompt has been sent to your phone. Enter your M-Pesa PIN to complete the payment.</p>
-            <div className="mpesa-waiting-steps">
-              <div className="waiting-step active">
-                <span className="step-num">1</span>
-                <span>STK Push sent ✓</span>
-              </div>
-              <div className="waiting-step">
-                <span className="step-num">2</span>
-                <span>Enter PIN on phone</span>
-              </div>
-              <div className="waiting-step">
-                <span className="step-num">3</span>
-                <span>Confirming payment...</span>
-              </div>
-            </div>
-            <p className="mpesa-hint">Do not close this window</p>
+            <h3>Confirming payment...</h3>
           </div>
         )}
 
@@ -160,12 +159,12 @@ export default function MpesaPaymentModal({ order, onClose, onPaymentComplete })
             <div className="mpesa-icon success">
               <FiCheckCircle />
             </div>
-            <h3>Payment Successful!</h3>
-            <p>Your M-Pesa payment has been confirmed.</p>
-            {receiptNumber && (
+            <h3>Payment Recorded! 🎉</h3>
+            <p>Your payment has been recorded and will be verified shortly.</p>
+            {confirmationCode && (
               <div className="mpesa-receipt">
                 <span>Receipt: </span>
-                <strong>{receiptNumber}</strong>
+                <strong>{confirmationCode}</strong>
               </div>
             )}
             <button onClick={onClose} className="btn btn-primary btn-full">
@@ -179,10 +178,10 @@ export default function MpesaPaymentModal({ order, onClose, onPaymentComplete })
             <div className="mpesa-icon failed">
               <FiXCircle />
             </div>
-            <h3>Payment Failed</h3>
+            <h3>Something Went Wrong</h3>
             <p>{error}</p>
             <div className="mpesa-actions">
-              <button onClick={() => { setStep('input'); setError(''); }} className="btn btn-mpesa">
+              <button onClick={() => { setStep('confirm'); setError(''); }} className="btn btn-mpesa">
                 Try Again
               </button>
               <button onClick={onClose} className="btn btn-secondary">

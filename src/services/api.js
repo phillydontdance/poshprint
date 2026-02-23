@@ -60,6 +60,7 @@ export async function placeOrder(token, items, delivery = {}) {
       items,
       deliveryMethod: delivery.method || 'pickup',
       deliveryLocation: delivery.location || null,
+      deliveryCoords: delivery.coords || null,
       customerPhone: delivery.phone || null,
     }),
   });
@@ -116,4 +117,16 @@ export async function updateOrderPayment(token, orderId, paymentData) {
   });
   if (!res.ok) throw new Error('Failed to update payment');
   return res.json();
+}
+
+// Manual M-Pesa: customer sends money then enters confirmation code
+export async function confirmManualPayment(token, orderId, confirmationCode) {
+  const res = await fetch(`${API_URL}/mpesa/confirm`, {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({ orderId, confirmationCode }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to confirm payment');
+  return data;
 }

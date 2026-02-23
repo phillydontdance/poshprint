@@ -143,9 +143,9 @@ export default function AdminOrders() {
                   <span className={`payment-badge ${order.paymentStatus || 'unpaid'}`}>
                     {order.paymentStatus === 'paid' ? <FiCheckCircle /> : <FiDollarSign />}
                     {order.paymentStatus === 'paid'
-                      ? `Paid${order.paymentMethod === 'mpesa' ? ' (M-Pesa)' : order.paymentMethod === 'manual' ? ' (Manual)' : ''}`
+                      ? `Paid${order.paymentMethod === 'mpesa' || order.paymentMethod === 'mpesa-manual' ? ' (M-Pesa)' : order.paymentMethod === 'manual' ? ' (Manual)' : ''}`
                       : order.paymentStatus === 'pending'
-                        ? 'Payment Pending'
+                        ? 'Awaiting Verification'
                         : 'Unpaid'}
                     {order.mpesaReceiptNumber && <small> • {order.mpesaReceiptNumber}</small>}
                   </span>
