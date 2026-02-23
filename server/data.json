@@ -26,6 +26,7 @@
       "id": 1,
       "name": "Classic White Tee",
       "description": "Premium cotton white t-shirt, perfect for custom prints",
+      "costPrice": 12.00,
       "price": 24.99,
       "quantity": 49,
       "sizes": [
@@ -45,6 +46,7 @@
       "id": 2,
       "name": "Black Graphic Tee",
       "description": "Soft black t-shirt ideal for vibrant graphic prints",
+      "costPrice": 15.00,
       "price": 29.99,
       "quantity": 35,
       "sizes": [
@@ -63,6 +65,7 @@
       "id": 3,
       "name": "Navy Blue V-Neck",
       "description": "Stylish v-neck tee in navy blue with premium fabric",
+      "costPrice": 14.00,
       "price": 27.99,
       "quantity": 25,
       "sizes": [
@@ -80,6 +83,7 @@
       "id": 4,
       "name": "Oversized Streetwear Tee",
       "description": "Trendy oversized fit for modern streetwear prints",
+      "costPrice": 18.00,
       "price": 34.99,
       "quantity": 20,
       "sizes": [
@@ -100,6 +104,7 @@
       "id": 5,
       "name": "Polo Sport Tee",
       "description": "Athletic polo shirt for professional and sport prints",
+      "costPrice": 20.00,
       "price": 39.99,
       "quantity": 15,
       "sizes": [
@@ -126,6 +131,7 @@
         {
           "productId": 1,
           "name": "Classic White Tee",
+          "costPrice": 12.00,
           "price": 24.99,
           "quantity": 1,
           "size": "S",

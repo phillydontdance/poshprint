@@ -665,7 +665,65 @@ a:hover { text-decoration: underline; }
 .stat-card h3 { font-size: 1.5rem; font-weight: 700; }
 .stat-card p { color: var(--text-muted); font-size: 0.85rem; }
 
-.dashboard-section h2 { margin-bottom: 1rem; }
+.stat-profit { border-left: 4px solid var(--success); }
+.stat-profit .stat-icon { color: var(--success); }
+.stat-cost .stat-icon { color: var(--warning); }
+
+.dashboard-section h2 { margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+/* Profit styles */
+.profit-positive { color: var(--success); font-weight: 600; }
+.profit-negative { color: var(--danger); font-weight: 600; }
+
+.profit-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--success);
+  margin-bottom: 0.5rem;
+}
+.profit-preview .profit-margin {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.profit-badge {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.profit-badge .profit-pct {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.cost-price {
+  color: var(--text-muted);
+}
+
+.order-profit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 1rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.order-profit.profit-positive {
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  color: var(--success);
+}
+.order-profit.profit-negative {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
 
 /* ============ ADMIN PRODUCTS ============ */
 .page-header {

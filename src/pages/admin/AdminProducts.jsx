@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
-import { fetchProducts, createProduct, updateProduct, deleteProduct } from '../../services/api';
-import { FiPlus, FiEdit2, FiTrash2, FiPackage, FiX, FiSave, FiCamera, FiImage } from 'react-icons/fi';
+import { fetchAdminProducts, createProduct, updateProduct, deleteProduct } from '../../services/api';
+import { FiPlus, FiEdit2, FiTrash2, FiPackage, FiX, FiSave, FiCamera, FiImage, FiTrendingUp } from 'react-icons/fi';
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -37,7 +37,7 @@ export default function AdminProducts() {
   const [success, setSuccess] = useState('');
 
   const emptyForm = {
-    name: '', description: '', price: '', quantity: '',
+    name: '', description: '', costPrice: '', price: '', quantity: '',
     sizes: 'S,M,L,XL', colors: 'White', image: '', category: 'Basic',
   };
   const [form, setForm] = useState(emptyForm);
@@ -48,7 +48,7 @@ export default function AdminProducts() {
 
   const loadProducts = async () => {
     try {
-      const data = await fetchProducts();
+      const data = await fetchAdminProducts(token);
       setProducts(data);
     } catch {
       setError('Failed to load products');
@@ -73,6 +73,7 @@ export default function AdminProducts() {
     setForm({
       name: product.name,
       description: product.description,
+      costPrice: product.costPrice?.toString() || '0',
       price: product.price.toString(),
       quantity: product.quantity.toString(),
       sizes: product.sizes.join(','),
@@ -92,6 +93,7 @@ export default function AdminProducts() {
     const productData = {
       name: form.name,
       description: form.description,
+      costPrice: parseFloat(form.costPrice) || 0,
       price: parseFloat(form.price),
       quantity: parseInt(form.quantity),
       sizes: form.sizes.split(',').map(s => s.trim()),
@@ -175,7 +177,11 @@ export default function AdminProducts() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Price ({settings.currencySymbol}) *</label>
+                  <label>Cost/Buying Price ({settings.currencySymbol}) *</label>
+                  <input name="costPrice" type="number" step="0.01" min="0" value={form.costPrice} onChange={handleChange} required placeholder="15.00" />
+                </div>
+                <div className="form-group">
+                  <label>Selling Price ({settings.currencySymbol}) *</label>
                   <input name="price" type="number" step="0.01" min="0" value={form.price} onChange={handleChange} required placeholder="29.99" />
                 </div>
                 <div className="form-group">
@@ -183,6 +189,13 @@ export default function AdminProducts() {
                   <input name="quantity" type="number" min="0" value={form.quantity} onChange={handleChange} required placeholder="50" />
                 </div>
               </div>
+              {form.costPrice && form.price && parseFloat(form.price) > 0 && (
+                <div className="profit-preview">
+                  <FiTrendingUp />
+                  <span>Profit per item: <strong>{settings.currencySymbol}{(parseFloat(form.price) - parseFloat(form.costPrice)).toFixed(2)}</strong></span>
+                  <span className="profit-margin">({((parseFloat(form.price) - parseFloat(form.costPrice)) / parseFloat(form.price) * 100).toFixed(1)}% margin)</span>
+                </div>
+              )}
 
               <div className="form-row">
                 <div className="form-group">
@@ -246,7 +259,9 @@ export default function AdminProducts() {
               <th>Image</th>
               <th>Name</th>
               <th>Category</th>
+              <th>Cost</th>
               <th>Price</th>
+              <th>Profit</th>
               <th>Quantity</th>
               <th>Sizes</th>
               <th>Actions</th>
@@ -254,7 +269,7 @@ export default function AdminProducts() {
           </thead>
           <tbody>
             {products.length === 0 ? (
-              <tr><td colSpan="7" className="text-center">No products yet. Add your first product!</td></tr>
+              <tr><td colSpan="9" className="text-center">No products yet. Add your first product!</td></tr>
             ) : (
               products.map(product => (
                 <tr key={product.id}>
@@ -264,7 +279,14 @@ export default function AdminProducts() {
                     <br /><small className="muted">{product.description?.substring(0, 50)}...</small>
                   </td>
                   <td><span className="category-tag">{product.category}</span></td>
+                  <td className="cost-price">{formatPrice(product.costPrice || 0)}</td>
                   <td className="price">{formatPrice(product.price)}</td>
+                  <td>
+                    <span className="profit-badge">
+                      {formatPrice(product.price - (product.costPrice || 0))}
+                      <small className="profit-pct"> ({((product.price - (product.costPrice || 0)) / product.price * 100).toFixed(0)}%)</small>
+                    </span>
+                  </td>
                   <td>
                     <span className={`stock-badge ${product.quantity < 10 ? 'low' : 'ok'}`}>
                       {product.quantity}

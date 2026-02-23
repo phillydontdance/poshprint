@@ -13,6 +13,15 @@ export async function fetchProducts() {
   return res.json();
 }
 
+// Admin: fetch products with cost prices
+export async function fetchAdminProducts(token) {
+  const res = await fetch(`${API_URL}/admin/products`, {
+    headers: getHeaders(token),
+  });
+  if (!res.ok) throw new Error('Failed to fetch products');
+  return res.json();
+}
+
 export async function fetchProduct(id) {
   const res = await fetch(`${API_URL}/products/${id}`);
   if (!res.ok) throw new Error('Product not found');

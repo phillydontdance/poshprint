@@ -73,52 +73,43 @@ export function AuthProvider({ children }) {
 
   // Dev login via browser console: window.__devLogin('YOUR_UID')
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      window.__devLogin = async (uid) => {
-        try {
-          const res = await fetch('/api/dev/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid }),
-          });
-          if (!res.ok) {
-            const err = await res.json();
-            console.error('❌ Dev login failed:', err.error);
-            return;
-          }
-          const data = await res.json();
-          setUser({ id: data.id, email: data.email, name: data.name, role: data.role });
-          setToken(data.token);
-          setLoading(false);
-          console.log(`✅ Logged in as ${data.name} (${data.role})`);
-          console.log(`   Email: ${data.email}`);
-          console.log(`   UID: ${data.id}`);
-          console.log('   Navigate to /admin for admin dashboard');
-        } catch (err) {
-          console.error('❌ Dev login error:', err);
+    window.__devLogin = async (uid) => {
+      try {
+        const res = await fetch('/api/dev/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid }),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          console.error('❌ Dev login failed:', err.error);
+          return;
         }
-      };
-
-      window.__devLogout = () => {
-        setUser(null);
-        setToken(null);
-        console.log('✅ Logged out');
-      };
-
-      // Show help on load
-      console.log(
-        '%c🔧 Posh Print Dev Mode',
-        'color: #22c55e; font-size: 14px; font-weight: bold;'
-      );
-      console.log('  Login as admin:  window.__devLogin("ZuqzgBP4h2MG2bi2Qau7KCjNsSU2")');
-      console.log('  Logout:          window.__devLogout()');
-    }
-    return () => {
-      if (import.meta.env.DEV) {
-        delete window.__devLogin;
-        delete window.__devLogout;
+        const data = await res.json();
+        setUser({ id: data.id, email: data.email, name: data.name, role: data.role });
+        setToken(data.token);
+        setLoading(false);
+        console.log(`✅ Logged in as ${data.name} (${data.role})`);
+        console.log(`   Email: ${data.email}`);
+        console.log(`   UID: ${data.id}`);
+        console.log('   Navigate to /admin for admin dashboard');
+      } catch (err) {
+        console.error('❌ Dev login error:', err);
       }
     };
+
+    window.__devLogout = () => {
+      setUser(null);
+      setToken(null);
+      console.log('✅ Logged out');
+    };
+
+    console.log(
+      '%c🔧 Posh Print Dev Mode',
+      'color: #22c55e; font-size: 14px; font-weight: bold;'
+    );
+    console.log('  Login as admin:  window.__devLogin("vz0W8gHYjqPsGqzxq6LgCmIqRv43")');
+    console.log('  Logout:          window.__devLogout()');
   }, []);
 
   return (

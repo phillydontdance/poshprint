@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { fetchOrders, updateOrderStatus, updateOrderPayment } from '../../services/api';
-import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiRefreshCw, FiDollarSign, FiSmartphone, FiMapPin, FiShoppingBag } from 'react-icons/fi';
+import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiRefreshCw, FiDollarSign, FiSmartphone, FiMapPin, FiShoppingBag, FiTrendingUp } from 'react-icons/fi';
 
 export default function AdminOrders() {
   const { token } = useAuth();
@@ -11,11 +11,8 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
   const loadOrders = async () => {
+    if (!token) return;
     try {
       const data = await fetchOrders(token);
       setOrders(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
@@ -25,6 +22,9 @@ export default function AdminOrders() {
       setLoading(false);
     }
   };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadOrders(); }, [token]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -139,6 +139,15 @@ export default function AdminOrders() {
 
               <div className="order-total">
                 <strong>Total: {formatPrice(order.total)}</strong>
+                {(() => {
+                  const orderCost = order.items.reduce((s, i) => s + (i.costPrice || 0) * i.quantity, 0);
+                  const orderProfit = order.total - orderCost;
+                  return orderCost > 0 ? (
+                    <span className={`order-profit ${orderProfit >= 0 ? 'profit-positive' : 'profit-negative'}`}>
+                      <FiTrendingUp /> Profit: {formatPrice(orderProfit)}
+                    </span>
+                  ) : null;
+                })()}
                 <div className="order-payment-info">
                   <span className={`payment-badge ${order.paymentStatus || 'unpaid'}`}>
                     {order.paymentStatus === 'paid' ? <FiCheckCircle /> : <FiDollarSign />}

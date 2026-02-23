@@ -166,11 +166,27 @@ app.get('/api/auth/me', authenticate, (req, res) => {
 
 // ============ PRODUCT ROUTES ============
 
-// Get all products (public)
+// Get all products (public — but hides cost price from non-admins)
 app.get('/api/products', (req, res) => {
   const data = readData();
-  // Customers see only in-stock products; everyone gets the list
-  res.json(data.products);
+  // Check if request has a valid admin token
+  const authHeader = req.headers.authorization;
+  let isAdmin = false;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const idToken = authHeader.split(' ')[1];
+    if (idToken.startsWith('dev:') && process.env.NODE_ENV !== 'production') {
+      const uid = idToken.slice(4);
+      const dbUser = data.users.find(u => u.firebaseUid === uid);
+      isAdmin = dbUser?.role === 'admin';
+    }
+    // For real tokens, we can't verify synchronously, so admin gets costPrice via the token middleware routes
+  }
+  if (isAdmin) {
+    res.json(data.products);
+  } else {
+    // Strip costPrice for non-admin/public requests
+    res.json(data.products.map(({ costPrice, ...p }) => p));
+  }
 });
 
 // Get single product
@@ -181,9 +197,15 @@ app.get('/api/products/:id', (req, res) => {
   res.json(product);
 });
 
+// Get all products with cost prices (admin only)
+app.get('/api/admin/products', authenticate, adminOnly, (req, res) => {
+  const data = readData();
+  res.json(data.products);
+});
+
 // Add product (admin only)
 app.post('/api/products', authenticate, adminOnly, (req, res) => {
-  const { name, description, price, quantity, sizes, colors, image, category } = req.body;
+  const { name, description, costPrice, price, quantity, sizes, colors, image, category } = req.body;
 
   if (!name || !price || quantity === undefined) {
     return res.status(400).json({ error: 'Name, price, and quantity are required' });
@@ -194,6 +216,7 @@ app.post('/api/products', authenticate, adminOnly, (req, res) => {
     id: Date.now(),
     name,
     description: description || '',
+    costPrice: parseFloat(costPrice) || 0,
     price: parseFloat(price),
     quantity: parseInt(quantity),
     sizes: sizes || ['M'],
@@ -258,6 +281,7 @@ app.post('/api/orders', authenticate, (req, res) => {
     orderItems.push({
       productId: product.id,
       name: product.name,
+      costPrice: product.costPrice || 0,
       price: product.price,
       quantity: item.quantity,
       size: item.size,
