@@ -82,3 +82,33 @@ export async function updateOrderStatus(token, id, status) {
   if (!res.ok) throw new Error('Failed to update order');
   return res.json();
 }
+
+// M-Pesa Payments
+export async function initiateMpesaPayment(token, orderId, phone) {
+  const res = await fetch(`${API_URL}/mpesa/pay`, {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({ orderId, phone }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to initiate M-Pesa payment');
+  return data;
+}
+
+export async function checkPaymentStatus(token, orderId) {
+  const res = await fetch(`${API_URL}/mpesa/status/${orderId}`, {
+    headers: getHeaders(token),
+  });
+  if (!res.ok) throw new Error('Failed to check payment status');
+  return res.json();
+}
+
+export async function updateOrderPayment(token, orderId, paymentData) {
+  const res = await fetch(`${API_URL}/orders/${orderId}/payment`, {
+    method: 'PUT',
+    headers: getHeaders(token),
+    body: JSON.stringify(paymentData),
+  });
+  if (!res.ok) throw new Error('Failed to update payment');
+  return res.json();
+}

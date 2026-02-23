@@ -1,9 +1,11 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
+import { initiateSTKPush, querySTKStatus, parseCallback, formatPhoneNumber } from './mpesa.js';
 
 // Initialize Firebase Admin (uses Application Default Credentials or service account)
 // For development, it uses the project ID from environment or config
@@ -228,6 +230,10 @@ app.post('/api/orders', authenticate, (req, res) => {
     items: orderItems,
     total: orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
     status: 'pending',
+    paymentStatus: 'unpaid',
+    paymentMethod: null,
+    mpesaReceiptNumber: null,
+    mpesaPhone: null,
     createdAt: new Date().toISOString(),
   };
 
@@ -256,6 +262,140 @@ app.put('/api/orders/:id', authenticate, adminOnly, (req, res) => {
   if (!order) return res.status(404).json({ error: 'Order not found' });
 
   order.status = req.body.status || order.status;
+  writeData(data);
+  res.json(order);
+});
+
+// ============ M-PESA PAYMENT ROUTES ============
+
+// Initiate M-Pesa STK Push payment for an order
+app.post('/api/mpesa/pay', authenticate, async (req, res) => {
+  const { orderId, phone } = req.body;
+
+  if (!orderId || !phone) {
+    return res.status(400).json({ error: 'Order ID and phone number are required' });
+  }
+
+  const data = readData();
+  if (!data.orders) data.orders = [];
+  const order = data.orders.find(o => String(o.id) === String(orderId));
+
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  if (order.userId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Not authorized' });
+  }
+  if (order.paymentStatus === 'paid') {
+    return res.status(400).json({ error: 'Order is already paid' });
+  }
+
+  try {
+    const formattedPhone = formatPhoneNumber(phone);
+    const result = await initiateSTKPush(formattedPhone, order.total, order.id);
+
+    // Store the checkout request ID on the order for tracking
+    order.mpesaCheckoutRequestId = result.checkoutRequestId;
+    order.mpesaPhone = formattedPhone;
+    order.paymentMethod = 'mpesa';
+    order.paymentStatus = 'pending';
+    writeData(data);
+
+    res.json({
+      message: 'STK Push sent. Check your phone to complete payment.',
+      checkoutRequestId: result.checkoutRequestId,
+    });
+  } catch (err) {
+    console.error('M-Pesa STK Push error:', err.message);
+    res.status(500).json({ error: err.message || 'Failed to initiate M-Pesa payment' });
+  }
+});
+
+// M-Pesa callback — called by Safaricom after payment
+app.post('/api/mpesa/callback', (req, res) => {
+  console.log('M-Pesa Callback received:', JSON.stringify(req.body, null, 2));
+
+  const result = parseCallback(req.body);
+  const data = readData();
+  if (!data.orders) data.orders = [];
+
+  // Find the order by checkoutRequestId
+  const order = data.orders.find(
+    o => o.mpesaCheckoutRequestId === result.checkoutRequestId
+  );
+
+  if (order) {
+    if (result.success) {
+      order.paymentStatus = 'paid';
+      order.mpesaReceiptNumber = result.mpesaReceiptNumber;
+      order.paidAt = new Date().toISOString();
+      console.log(`✅ Payment confirmed for Order #${order.id}: ${result.mpesaReceiptNumber}`);
+    } else {
+      order.paymentStatus = 'failed';
+      order.paymentError = result.resultDesc;
+      console.log(`❌ Payment failed for Order #${order.id}: ${result.resultDesc}`);
+    }
+    writeData(data);
+  }
+
+  // Always respond with success to M-Pesa
+  res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+});
+
+// Check payment status for an order
+app.get('/api/mpesa/status/:orderId', authenticate, async (req, res) => {
+  const data = readData();
+  if (!data.orders) data.orders = [];
+  const order = data.orders.find(o => String(o.id) === String(req.params.orderId));
+
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  if (order.userId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Not authorized' });
+  }
+
+  // If payment is still pending, try querying M-Pesa for the latest status
+  if (order.paymentStatus === 'pending' && order.mpesaCheckoutRequestId) {
+    try {
+      const stkStatus = await querySTKStatus(order.mpesaCheckoutRequestId);
+
+      if (stkStatus.ResultCode === '0' || stkStatus.ResultCode === 0) {
+        order.paymentStatus = 'paid';
+        order.paidAt = new Date().toISOString();
+        writeData(data);
+      } else if (stkStatus.ResultCode && stkStatus.ResultCode !== '0') {
+        order.paymentStatus = 'failed';
+        order.paymentError = stkStatus.ResultDesc;
+        writeData(data);
+      }
+      // If ResultCode is undefined, the transaction is still processing
+    } catch (err) {
+      console.error('STK query error:', err.message);
+      // Don't fail — just return current status
+    }
+  }
+
+  res.json({
+    orderId: order.id,
+    paymentStatus: order.paymentStatus || 'unpaid',
+    paymentMethod: order.paymentMethod,
+    mpesaReceiptNumber: order.mpesaReceiptNumber,
+    mpesaPhone: order.mpesaPhone,
+    paidAt: order.paidAt,
+  });
+});
+
+// Admin: manually mark an order as paid (e.g., for cash payments)
+app.put('/api/orders/:id/payment', authenticate, adminOnly, (req, res) => {
+  const { paymentStatus, paymentMethod, mpesaReceiptNumber } = req.body;
+  const data = readData();
+  if (!data.orders) data.orders = [];
+  const order = data.orders.find(o => String(o.id) === String(req.params.id));
+
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+
+  if (paymentStatus) order.paymentStatus = paymentStatus;
+  if (paymentMethod) order.paymentMethod = paymentMethod;
+  if (mpesaReceiptNumber) order.mpesaReceiptNumber = mpesaReceiptNumber;
+  if (paymentStatus === 'paid') order.paidAt = new Date().toISOString();
+
   writeData(data);
   res.json(order);
 });

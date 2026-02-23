@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
-import { fetchOrders, updateOrderStatus } from '../../services/api';
-import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiRefreshCw } from 'react-icons/fi';
+import { fetchOrders, updateOrderStatus, updateOrderPayment } from '../../services/api';
+import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiRefreshCw, FiDollarSign, FiSmartphone } from 'react-icons/fi';
 
 export default function AdminOrders() {
   const { token } = useAuth();
@@ -32,6 +32,18 @@ export default function AdminOrders() {
       loadOrders();
     } catch {
       console.error('Failed to update status');
+    }
+  };
+
+  const handleMarkPaid = async (orderId) => {
+    try {
+      await updateOrderPayment(token, orderId, {
+        paymentStatus: 'paid',
+        paymentMethod: 'manual',
+      });
+      loadOrders();
+    } catch {
+      console.error('Failed to update payment');
     }
   };
 
@@ -116,6 +128,30 @@ export default function AdminOrders() {
 
               <div className="order-total">
                 <strong>Total: {formatPrice(order.total)}</strong>
+                <div className="order-payment-info">
+                  <span className={`payment-badge ${order.paymentStatus || 'unpaid'}`}>
+                    {order.paymentStatus === 'paid' ? <FiCheckCircle /> : <FiDollarSign />}
+                    {order.paymentStatus === 'paid'
+                      ? `Paid${order.paymentMethod === 'mpesa' ? ' (M-Pesa)' : order.paymentMethod === 'manual' ? ' (Manual)' : ''}`
+                      : order.paymentStatus === 'pending'
+                        ? 'Payment Pending'
+                        : 'Unpaid'}
+                    {order.mpesaReceiptNumber && <small> • {order.mpesaReceiptNumber}</small>}
+                  </span>
+                  {order.mpesaPhone && (
+                    <span className="mpesa-phone-info">
+                      <FiSmartphone /> {order.mpesaPhone}
+                    </span>
+                  )}
+                  {order.paymentStatus !== 'paid' && (
+                    <button
+                      className="btn btn-sm btn-success"
+                      onClick={() => handleMarkPaid(order.id)}
+                    >
+                      <FiCheckCircle /> Mark Paid
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}

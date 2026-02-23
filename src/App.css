@@ -1327,3 +1327,425 @@ a:hover { text-decoration: underline; }
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* ============ M-PESA PAYMENT ============ */
+.mpesa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.mpesa-modal {
+  background: var(--card);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mpesa-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mpesa-close:hover { color: var(--danger); background: var(--primary-light); }
+
+.mpesa-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.mpesa-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border-radius: 24px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+.mpesa-logo svg { font-size: 1.2rem; }
+
+.mpesa-header h2 {
+  font-size: 1.25rem;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.mpesa-amount {
+  font-size: 1.4rem;
+  color: var(--primary);
+  margin: 0.5rem 0 0.25rem;
+}
+.mpesa-amount strong { font-weight: 700; }
+
+.mpesa-order-ref {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.mpesa-info {
+  background: var(--primary-light);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.mpesa-form .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.mpesa-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.phone-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.phone-input-wrapper:focus-within { border-color: var(--primary); }
+
+.phone-prefix {
+  padding: 0.75rem 0.75rem;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.phone-input-wrapper input {
+  border: none;
+  outline: none;
+  padding: 0.75rem;
+  font-size: 1.1rem;
+  width: 100%;
+  background: var(--input-bg);
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+
+.btn-mpesa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1.5rem;
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-mpesa:hover { background: linear-gradient(135deg, #43a047, #1b5e20); transform: translateY(-1px); }
+.btn-mpesa:active { transform: scale(0.98); }
+
+.btn-sm {
+  padding: 0.4rem 0.85rem !important;
+  font-size: 0.82rem !important;
+  width: auto !important;
+}
+
+.btn-success {
+  background: var(--success) !important;
+  color: white !important;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-success:hover { opacity: 0.85; }
+
+.mpesa-error {
+  background: #fef2f2;
+  color: var(--danger);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  border: 1px solid #fee2e2;
+}
+
+.mpesa-status {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.mpesa-spinner {
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.spin {
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+}
+
+.mpesa-status h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.mpesa-status p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.mpesa-waiting-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 1.25rem 0;
+  text-align: left;
+  max-width: 220px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.waiting-step {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.waiting-step.active { color: var(--success); font-weight: 600; }
+
+.step-num {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.waiting-step.active .step-num { background: var(--success); color: white; }
+
+.mpesa-hint {
+  font-size: 0.8rem !important;
+  color: var(--warning) !important;
+  margin-top: 1rem !important;
+  font-weight: 600;
+}
+
+.mpesa-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+.mpesa-icon.success { color: var(--success); }
+.mpesa-icon.failed { color: var(--danger); }
+
+.mpesa-receipt {
+  background: var(--bg);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 0.95rem;
+}
+.mpesa-receipt strong { color: var(--text); }
+
+.mpesa-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.mpesa-actions .btn { flex: 1; }
+
+/* Payment Choice Modal (after order placed) */
+.payment-choice-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.payment-choice-modal {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 2rem;
+  text-align: center;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+
+.payment-choice-modal h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.payment-choice-modal p {
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.payment-prompt {
+  font-weight: 600;
+  color: var(--text) !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+  font-size: 1rem;
+}
+
+.payment-choice-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* Payment badge for order cards */
+.order-payment-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.payment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.payment-badge.paid {
+  background: #dcfce7;
+  color: #166534;
+}
+.payment-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+.payment-badge.unpaid {
+  background: #fef2f2;
+  color: #991b1b;
+}
+.payment-badge.failed {
+  background: #fef2f2;
+  color: #991b1b;
+}
+.payment-badge small {
+  font-weight: 400;
+  font-size: 0.75rem;
+}
+
+.mpesa-phone-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .payment-badge.paid {
+  background: #052e16;
+  color: #86efac;
+}
+[data-theme="dark"] .payment-badge.pending {
+  background: #451a03;
+  color: #fcd34d;
+}
+[data-theme="dark"] .payment-badge.unpaid,
+[data-theme="dark"] .payment-badge.failed {
+  background: #450a0a;
+  color: #fca5a5;
+}
+[data-theme="dark"] .mpesa-error {
+  background: #450a0a;
+  border-color: #7f1d1d;
+}
+[data-theme="dark"] .mpesa-info {
+  background: var(--primary-light);
+  color: var(--text-muted);
+}

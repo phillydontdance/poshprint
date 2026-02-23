@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { fetchOrders } from '../services/api';
-import { FiPackage, FiClock, FiCheckCircle, FiTruck } from 'react-icons/fi';
+import { FiPackage, FiClock, FiCheckCircle, FiTruck, FiSmartphone, FiDollarSign } from 'react-icons/fi';
+import MpesaPaymentModal from '../components/MpesaPaymentModal';
 
 export default function CustomerOrdersPage() {
   const { token } = useAuth();
   const { formatPrice } = useSettings();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [payingOrder, setPayingOrder] = useState(null);
 
   useEffect(() => {
     loadOrders();
@@ -32,6 +34,23 @@ export default function CustomerOrdersPage() {
       case 'completed': return <FiCheckCircle className="status-icon completed" />;
       default: return <FiClock />;
     }
+  };
+
+  const paymentBadge = (order) => {
+    const status = order.paymentStatus || 'unpaid';
+    const icons = {
+      paid: <FiCheckCircle />,
+      pending: <FiClock />,
+      unpaid: <FiDollarSign />,
+      failed: <FiClock />,
+    };
+    return (
+      <span className={`payment-badge ${status}`}>
+        {icons[status] || <FiDollarSign />}
+        {status === 'paid' ? 'Paid' : status === 'pending' ? 'Payment Pending' : status === 'failed' ? 'Payment Failed' : 'Unpaid'}
+        {order.mpesaReceiptNumber && <small> ({order.mpesaReceiptNumber})</small>}
+      </span>
+    );
   };
 
   if (loading) return <div className="loading">Loading orders...</div>;
@@ -77,10 +96,29 @@ export default function CustomerOrdersPage() {
 
               <div className="order-total">
                 <strong>Total: {formatPrice(order.total)}</strong>
+                <div className="order-payment-info">
+                  {paymentBadge(order)}
+                  {(!order.paymentStatus || order.paymentStatus === 'unpaid' || order.paymentStatus === 'failed') && (
+                    <button
+                      className="btn btn-mpesa btn-sm"
+                      onClick={() => setPayingOrder(order)}
+                    >
+                      <FiSmartphone /> Pay via M-Pesa
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {payingOrder && (
+        <MpesaPaymentModal
+          order={payingOrder}
+          onClose={() => { setPayingOrder(null); loadOrders(); }}
+          onPaymentComplete={() => { setPayingOrder(null); loadOrders(); }}
+        />
       )}
     </div>
   );
