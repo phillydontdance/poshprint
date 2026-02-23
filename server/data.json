@@ -5,6 +5,20 @@
       "email": "admin@poshprint.com",
       "role": "admin",
       "name": "Admin User"
+    },
+    {
+      "firebaseUid": "ZuqzgBP4h2MG2bi2Qau7KCjNsSU2",
+      "email": "admin@poshprint.com",
+      "role": "admin",
+      "name": "Admin",
+      "createdAt": "2026-02-23T00:00:00.000Z"
+    },
+    {
+      "firebaseUid": "vz0W8gHYjqPsGqzxq6LgCmIqRv43",
+      "email": "admin@poshprint.com",
+      "role": "admin",
+      "name": "Admin",
+      "createdAt": "2026-02-23T00:00:00.000Z"
     }
   ],
   "products": [
