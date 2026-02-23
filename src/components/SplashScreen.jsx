@@ -1,36 +1,67 @@
 import { useState, useEffect } from 'react';
 
 export default function SplashScreen({ onFinish }) {
-  const [phase, setPhase] = useState('enter'); // enter → show → exit → done
+  const [phase, setPhase] = useState('enter');
 
   useEffect(() => {
-    // Phase 1: entrance animation plays (CSS handles it)
-    const showTimer = setTimeout(() => setPhase('show'), 800);
-    // Phase 2: hold for a moment
-    const exitTimer = setTimeout(() => setPhase('exit'), 2800);
-    // Phase 3: fade out and unmount
-    const doneTimer = setTimeout(() => onFinish(), 3600);
-
-    return () => {
-      clearTimeout(showTimer);
-      clearTimeout(exitTimer);
-      clearTimeout(doneTimer);
-    };
+    const timers = [
+      setTimeout(() => setPhase('logo'), 400),
+      setTimeout(() => setPhase('brand'), 1200),
+      setTimeout(() => setPhase('tagline'), 2000),
+      setTimeout(() => setPhase('exit'), 3400),
+      setTimeout(() => onFinish(), 4200),
+    ];
+    return () => timers.forEach(clearTimeout);
   }, [onFinish]);
 
   return (
     <div className={`splash-screen ${phase}`}>
+      {/* Animated background particles */}
+      <div className="splash-particles">
+        {[...Array(20)].map((_, i) => (
+          <div key={i} className="splash-particle" style={{
+            '--x': `${Math.random() * 100}%`,
+            '--y': `${Math.random() * 100}%`,
+            '--size': `${Math.random() * 4 + 2}px`,
+            '--delay': `${Math.random() * 2}s`,
+            '--duration': `${Math.random() * 3 + 2}s`,
+          }} />
+        ))}
+      </div>
+
+      {/* Orbiting rings */}
+      <div className="splash-orbit-container">
+        <div className="splash-orbit splash-orbit-1"></div>
+        <div className="splash-orbit splash-orbit-2"></div>
+        <div className="splash-orbit splash-orbit-3"></div>
+      </div>
+
       <div className="splash-content">
-        <div className="splash-logo-ring">
-          <div className="splash-ring"></div>
-          <div className="splash-icon">N</div>
+        {/* Logo */}
+        <div className="splash-logo-container">
+          <div className="splash-logo-glow"></div>
+          <div className="splash-logo-hexagon">
+            <span>PP</span>
+          </div>
         </div>
-        <div className="splash-text">
+
+        {/* Brand name */}
+        <div className="splash-brand">
+          <h1 className="splash-title">
+            {'Posh Print'.split('').map((char, i) => (
+              <span key={i} className="splash-char" style={{ '--i': i }}>
+                {char === ' ' ? '\u00A0' : char}
+              </span>
+            ))}
+          </h1>
+          <div className="splash-line"></div>
+        </div>
+
+        {/* Tagline */}
+        <div className="splash-tagline">
           <span className="splash-made">Made by</span>
-          <span className="splash-company">Nastech</span>
-          <span className="splash-suffix">Company</span>
+          <span className="splash-company">Nastech Company</span>
         </div>
-        <div className="splash-line"></div>
       </div>
     </div>
   );

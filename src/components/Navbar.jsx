@@ -32,7 +32,10 @@ export default function Navbar() {
       <nav className="navbar">
         <Link to="/" className="navbar-brand">
           <FiShoppingBag />
-          <span>Posh Print</span>
+          <div className="brand-text">
+            <span>Posh Print</span>
+            <small className="brand-tagline">by Nastech Company</small>
+          </div>
         </Link>
 
         {/* Desktop nav links */}
